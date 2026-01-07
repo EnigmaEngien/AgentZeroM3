@@ -263,9 +263,9 @@
     display: inline-flex;
     align-items: center;
     padding: 8px 16px;
-    background: #4248f1;
+    background: var(--md-sys-color-surface-container-high);
     gap: 0.5rem;
-    color: white;
+    color: var(--md-sys-color-on-surface);
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease-in-out;
@@ -274,10 +274,10 @@
     width: 20px;
     }
     .btn-upload:hover {
-    background-color: #353bc5;
+    background-color: var(--md-sys-color-surface-container);
     }
     .btn-upload:active {
-    background-color: #2b309c;
+    background-color: var(--md-sys-color-surface-container-low);
     }
     /* Delete Button Styles */
     .delete-button {
@@ -291,7 +291,7 @@
     transition: opacity 0.2s, background-color 0.2s;
     }
     .delete-button:hover {
-    color: #ff7878;
+    color: var(--md-sys-color-on-surface-variant);
     }
     .delete-button:active {
     opacity: 0.6;
@@ -318,7 +318,7 @@
     background-color: var(--color-border);
     }
     .light-mode .download-button:hover {
-    background-color: #c6d4de;
+    background-color: var(--md-sys-color-surface-variant);
     }
     /* Responsive Design */
     @media (max-width: 768px) {

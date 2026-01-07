@@ -1,12 +1,60 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+:root {
+    /* Copying necessary variables from index.css for consistency */
+    --md-sys-color-background: #0B0B0B;
+    --md-sys-color-on-background: #E6E6E6;
+    --md-sys-color-surface: #0F1113;
+    --md-sys-color-on-surface: #E6E6E6;
+    --md-sys-color-surface-container-lowest: #070708;
+    --md-sys-color-surface-container: #111315;
+    --md-sys-color-surface-container-high: #16181A;
+    --md-sys-color-surface-container-highest: #1C1E20;
+    --md-sys-color-secondary: #919191;
+    --md-sys-color-on-secondary: #E6E6E6;
+    --md-sys-color-secondary-container: #2A2B2C;
+    --md-sys-color-on-secondary-container: #E6E6E6;
+    /* Replace pink/tertiary palette with neutral gray tones */
+    --md-sys-color-tertiary: #9B9B9B;
+    --md-sys-color-on-tertiary: #E6E6E6;
+    --md-sys-color-tertiary-container: #2E2F30;
+    --md-sys-color-on-tertiary-container: #E6E6E6;
+    --md-sys-color-error: #9A9A9A;
+    --md-sys-color-on-error: #E6E6E6;
+    --md-sys-color-error-container: #2E2E2E;
+    --md-sys-color-on-error-container: #E6E6E6;
+    --md-sys-color-outline: #5A5A5A;
+    --md-sys-color-outline-variant: #49454F;
+    --md-sys-color-primary: #D0BCFF;
+    /* Default accent if not set, but button usually overrides */
+    --md-sys-color-on-primary: #381E72;
+    --md-sys-color-error: #9A9A9A;
+
+    --font-family-main: "Rubik", system-ui, -apple-system, sans-serif;
+
+    --shape-large: 16px;
+    --shape-extra-large: 28px;
+
+    --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.2);
+    --elevation-2: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
 body {
-    background-color: #131313;
-    color: #d4d4d4;
-    font-family: "Rubik", Arial, Helvetica, sans-serif;
+    background-color: var(--md-sys-color-background);
+    color: var(--md-sys-color-on-background);
+    font-family: var(--font-family-main);
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     margin: 0;
+    overflow: hidden;
 }
 
 .login-container {
@@ -14,27 +62,32 @@ body {
     justify-content: center;
     align-items: center;
     width: 100%;
+    padding: 16px;
 }
 
 .login-form {
-    background-color: #1a1a1a;
-    padding: 2rem;
-    border-radius: 1.125rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    background-color: var(--md-sys-color-surface-container-lowest);
+    padding: 2.5rem;
+    border-radius: var(--shape-extra-large);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    box-shadow: var(--elevation-2);
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
     text-align: center;
 }
 
 .logo {
     width: 80px;
     height: 80px;
-    border-radius: 0.3125rem; /* Match the main page logo style */
+    border-radius: 12px;
     margin-bottom: 1rem;
+    box-shadow: var(--elevation-1);
 }
 
 h2 {
     margin-bottom: 2rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
 }
 
 .input-group {
@@ -45,37 +98,64 @@ h2 {
 .input-group label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #737a81;
+    color: var(--md-sys-color-on-surface);
+    opacity: 0.8;
+    font-size: 0.9rem;
+    margin-left: 4px;
 }
 
 .input-group input {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #444444a8;
-    border-radius: 0.5rem;
-    background-color: #131313;
-    color: #d4d4d4;
+    padding: 0.85rem;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 12px;
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
     font-size: 1rem;
-    box-sizing: border-box; /* Added for consistent padding */
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    font-family: var(--font-family-main);
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #A0A0A0;
+    /* Neutral focus color since primary is variable */
+    background-color: var(--md-sys-color-surface-container-highest);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
 }
 
 button {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.85rem;
     border: none;
-    border-radius: 0.5rem;
-    background-color: #4248f1;
-    color: white;
+    border-radius: 100px;
+    /* Capsule shape */
+    background-color: var(--md-sys-color-on-surface);
+    /* High contrast action */
+    color: var(--md-sys-color-surface-container-lowest);
     font-size: 1rem;
+    font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.2s ease;
+    font-family: var(--font-family-main);
 }
 
 button:hover {
-    background-color: #353bc5;
+    opacity: 0.9;
+    box-shadow: var(--elevation-1);
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: scale(0.98);
 }
 
 .error {
-    color: #cf6679;
+    color: var(--md-sys-color-error);
     margin-top: 1rem;
+    font-size: 0.9rem;
+    background-color: rgba(154, 154, 154, 0.1);
+    padding: 8px;
+    border-radius: 8px;
 }

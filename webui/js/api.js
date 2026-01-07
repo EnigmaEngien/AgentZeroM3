@@ -16,6 +16,7 @@ export async function callJsonApi(endpoint, data) {
   });
 
   if (!response.ok) {
+    if (response.status === 404) return null;
     const error = await response.text();
     throw new Error(error);
   }
@@ -71,6 +72,7 @@ export async function fetchApi(url, request) {
 
 // csrf token stored locally
 let csrfToken = null;
+let csrfCheckFailed = false; // Flag to stop repeated 404 spam
 
 /**
  * Get the CSRF token for API requests
@@ -79,21 +81,37 @@ let csrfToken = null;
  */
 async function getCsrfToken() {
   if (csrfToken) return csrfToken;
-  const response = await fetch("/csrf_token", {
-    credentials: "same-origin",
-  });
-  if (response.redirected && response.url.endsWith("/login")) {
-    // redirect to login
-    window.location.href = response.url;
-    return;
-  }
-  const json = await response.json();
-  if (json.ok) {
-    csrfToken = json.token;
-    document.cookie = `csrf_token_${json.runtime_id}=${csrfToken}; SameSite=Strict; Path=/`;
-    return csrfToken;
-  } else {
-    if (json.error) alert(json.error);
-    throw new Error(json.error || "Failed to get CSRF token");
+  if (csrfCheckFailed) return null; // Don't keep spamming 404s if we already know it's missing
+
+  try {
+    const response = await fetch("/csrf_token", {
+      credentials: "same-origin",
+    });
+
+    if (response.status === 404) {
+      console.warn("Backend not found (404 on /csrf_token). Operating in Offline/Preview mode.");
+      csrfCheckFailed = true; // Mark as failed so we don't try again
+      return null;
+    }
+
+    if (response.redirected && response.url.endsWith("/login")) {
+      // redirect to login
+      window.location.href = response.url;
+      return;
+    }
+    const json = await response.json();
+    if (json.ok) {
+      csrfToken = json.token;
+      document.cookie = `csrf_token_${json.runtime_id}=${csrfToken}; SameSite=Strict; Path=/`;
+      return csrfToken;
+    } else {
+      if (json.error) alert(json.error);
+      throw new Error(json.error || "Failed to get CSRF token");
+    }
+  } catch (e) {
+    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+      console.error("API Connection Error:", e);
+    }
+    return null;
   }
 }

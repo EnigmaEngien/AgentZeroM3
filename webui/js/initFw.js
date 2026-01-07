@@ -1,6 +1,7 @@
 import * as initializer from "./initializer.js";
 import * as _modals from "./modals.js";
 import * as _components from "./components.js";
+import { store as preferencesStore } from "/components/sidebar/bottom/preferences/preferences-store.js";
 
 // initialize required elements
 await initializer.initialize();

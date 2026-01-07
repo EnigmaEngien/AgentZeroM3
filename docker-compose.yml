@@ -1,0 +1,15 @@
+services:
+  agent-zero:
+    build:
+      context: .
+      dockerfile: DockerfileLocal
+    container_name: agent-zero-custom
+    ports:
+      - "50080:80" # Web Interface
+      - "50022:22" # SSH Access (if needed)
+      - "59000-59009:9000-9009" # MCP / Additional Ports
+    volumes:
+      - .:/per # Persistent storage (configs, logs, etc.)
+    environment:
+      - BRANCH=local
+    restart: unless-stopped

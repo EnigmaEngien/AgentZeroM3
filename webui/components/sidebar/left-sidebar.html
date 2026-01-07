@@ -34,100 +34,70 @@
   </div>
 
   <style>
-    /* Left Panel styles from index.css */
     #left-panel {
-      background-color: var(--color-panel);
-      border-right: 1px solid var(--color-border);
+      background-color: var(--md-sys-color-surface-container-low);
+      border-right: 1px solid var(--md-sys-color-outline-variant, #49454F);
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: all var(--transition-speed) ease-in-out;
-      width: 250px;
-      min-width: 250px;
-      color: var(--color-text);
-      box-shadow: 1px 0 5px rgba(0, 0, 0, 0.3);
+      transition: transform var(--duration-medium) var(--easing-emphasized),
+        margin-left var(--duration-medium) var(--easing-emphasized);
+      width: 280px;
+      /* M3 Standard Drawer Width */
+      min-width: 280px;
+      color: var(--md-sys-color-on-surface);
       user-select: none;
       -webkit-user-select: none;
-      /* Safari compatibility */
       height: 100vh;
-      /* Ensure full height */
       overflow: hidden;
-      /* Prevent overall panel overflow */
-    }
-
-    /* Ensure component host behaves like the original direct children for flex layout */
-    #left-panel>.left-panel-top,
-    #left-panel>.left-panel-bottom {
-      display: flex;
-      flex-direction: column;
-    }
-
-    #left-panel>.left-panel-top {
-      flex: 1;
-      min-height: 0;
-      /* allow inner flex children to shrink properly */
+      z-index: 1000;
+      border-radius: 0 28px 28px 0;
+      /* Rounded corners on the right side */
     }
 
     #left-panel.hidden {
-      margin-left: -250px;
+      margin-left: -280px;
     }
 
     .left-panel-top {
       flex: 1 1 auto;
-      /* Take available space */
-      display: -webkit-flex;
       display: flex;
       flex-direction: column;
       min-height: 0;
-      /* Critical for allowing flex children to shrink */
       overflow: hidden;
-      justify-content: space-between;
-      margin-top: 3.5rem;
-      padding: var(--spacing-md) var(--spacing-md) 0 var(--spacing-md);
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-
-    .left-panel-top::-webkit-scrollbar {
-      width: 0px;
+      margin-top: 4.5rem;
+      /* Space for M3 header icons */
+      padding: 0 var(--spacing-md);
     }
 
     .left-panel-bottom {
       position: relative;
       flex-shrink: 0;
-      flex-grow: 0;
-      /* Prevent bottom from growing */
+      padding: var(--spacing-md);
+      background-color: var(--md-sys-color-surface-container-low);
     }
 
-    /* Chats section container inside sidebar */
     #chats-section {
-      display: -webkit-flex;
       display: flex;
       flex-direction: column;
       min-height: 0;
       flex: 1 1 auto;
-      /* Take all available space */
-      max-height: 100%;
       overflow: hidden;
+      margin-bottom: var(--spacing-md);
     }
 
-    /* Tasks section container inside sidebar */
     #tasks-section {
-      display: -webkit-flex;
       display: flex;
       flex-direction: column;
       min-height: 0;
       flex: 0 0 auto;
-      /* Shrink to content, no reserved space */
       max-height: 40%;
-      /* Limit to 40% of viewport height when expanded */
-      margin-top: 0;
       padding-top: var(--spacing-md);
+      border-top: 1px solid var(--md-sys-color-outline-variant);
       overflow: hidden;
     }
 
-    /* Flatten wrapper elements to maintain flex chain for inner scroll containers */
     #chats-section>x-component,
     #chats-section>x-component>div[x-data],
     #tasks-section>x-component,
@@ -136,36 +106,18 @@
       display: contents;
     }
 
-    /* Bootstrap collapse elements need proper display for animation to work */
-    #tasks-section .collapse {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-height: 0;
-    }
-
-    /* During the collapsing transition, allow height animation to control size */
-    #tasks-section .collapsing {
-      flex: 0 0 auto !important;
-    }
-
-    /* Common section header styling (Chats, Tasks) - matching Preferences style */
     .section-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 6px;
-      margin: 0 0 0.5rem 0;
-      padding: 0;
-      -webkit-user-select: none;
-      /* Safari compatibility */
-      user-select: none;
-      font-size: var(--font-size-normal);
-    }
-
-    /* Collapsible section headers (Tasks) */
-    .section-header-collapsible {
-      cursor: pointer;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      color: var(--md-sys-color-on-surface);
+      opacity: 0.9;
+      font-weight: 500;
+      letter-spacing: 0.1px;
+      font-size: 0.75rem;
+      /* M3 Label Small */
+      text-transform: uppercase;
     }
 
     @media (max-width: 768px) {
@@ -174,27 +126,17 @@
         left: 0;
         top: 0;
         bottom: 0;
-        width: 250px !important;
-        /* Force width */
-        min-width: 250px;
+        width: 320px !important;
+        /* Larger for mobile drawer */
+        min-width: 320px;
         z-index: 1003;
-        transition: all var(--transition-speed) ease-in-out;
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4);
+        border-radius: 0 28px 28px 0;
+        /* Expressive rounded mobile drawer */
       }
 
       #left-panel.hidden {
-        margin-left: -250px;
-      }
-    }
-
-    @media (max-height: 600px) {
-      #chats-section {
-        min-height: 100%;
-      }
-
-      .left-panel-top {
-        overflow-y: auto;
-        -webkit-scroll-behavior: smooth;
-        scroll-behavior: smooth;
+        margin-left: -320px;
       }
     }
   </style>

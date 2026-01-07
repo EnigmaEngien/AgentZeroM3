@@ -11,18 +11,18 @@
 .scheduler-flatpickr-input {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid var(--color-border, #ccc);
+  border: 1px solid var(--color-border, var(--md-sys-color-outline));
   border-radius: 4px;
-  background-color: var(--color-input, #fff);
-  color: var(--color-text, #333);
+  background-color: var(--color-input, var(--md-sys-color-surface));
+  color: var(--color-text, var(--md-sys-color-on-surface));
   font-size: 14px;
   cursor: pointer;
 }
 
 /* Calendar container customization */
 .flatpickr-calendar.scheduler-theme {
-  background: var(--color-panel, #fff);
-  border: 1px solid var(--color-border, #ccc);
+  background: var(--color-panel, var(--md-sys-color-surface));
+  border: 1px solid var(--color-border, var(--md-sys-color-outline));
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   color: var(--color-text, #333);
@@ -37,9 +37,9 @@
 
 /* Month navigation */
 .flatpickr-calendar.scheduler-theme .flatpickr-months {
-  background-color: var(--color-primary, #4a90e2);
+  background-color: var(--color-primary, var(--md-sys-color-primary));
   border-radius: 4px 4px 0 0;
-  color: var(--color-text, #333);
+  color: var(--color-text, var(--md-sys-color-on-surface));
   padding: 8px 0;
 }
 
@@ -55,12 +55,12 @@
 
 /* Days of week */
 .flatpickr-calendar.scheduler-theme .flatpickr-weekdays {
-  background-color: var(--color-panel, #fff);
-  border-bottom: 1px solid var(--color-border, #eee);
+  background-color: var(--color-panel, var(--md-sys-color-surface));
+  border-bottom: 1px solid var(--color-border, var(--md-sys-color-outline));
 }
 
 .flatpickr-calendar.scheduler-theme .flatpickr-weekday {
-  color: var(--color-text, #333);
+  color: var(--color-text, var(--md-sys-color-on-surface));
   font-weight: bold;
 }
 
@@ -72,18 +72,18 @@
 }
 
 .flatpickr-calendar.scheduler-theme .flatpickr-day:hover {
-  background-color: var(--color-panel, #f0f0f0);
+  background-color: var(--color-panel, var(--md-sys-color-surface-variant));
 }
 
 .flatpickr-calendar.scheduler-theme .flatpickr-day.selected {
-  background-color: var(--color-primary, #4a90e2);
-  border-color: var(--color-border, #ccc);
-  color: var(--color-text, #333);
+  background-color: var(--color-primary, var(--md-sys-color-primary));
+  border-color: var(--color-border, var(--md-sys-color-outline));
+  color: var(--color-text, var(--md-sys-color-on-surface));
 }
 
 .flatpickr-calendar.scheduler-theme .flatpickr-day.today {
-  border-color: var(--color-border, #ccc);
-  color: var(--color-text, #333);
+  border-color: var(--color-border, var(--md-sys-color-outline));
+  color: var(--color-text, var(--md-sys-color-on-surface));
 }
 
 /* Time picker */
@@ -97,13 +97,13 @@
 }
 
 .flatpickr-calendar.scheduler-theme .numInputWrapper span:hover {
-  background-color: var(--color-panel, #f0f0f0);
+  background-color: var(--color-panel, var(--md-sys-color-surface-variant));
 }
 
 .flatpickr-calendar.scheduler-theme input.flatpickr-hour,
 .flatpickr-calendar.scheduler-theme input.flatpickr-minute,
 .flatpickr-calendar.scheduler-theme input.flatpickr-second {
-  color: var(--color-text, #333);
+  color: var(--color-text, var(--md-sys-color-on-surface));
   background-color: transparent;
 }
 
@@ -116,7 +116,7 @@
   cursor: pointer;
   padding: 4px;
   display: none;
-  color: var(--color-text-light, #999);
+  color: var(--color-text-light, var(--md-sys-color-on-surface-variant));
   background: transparent;
   border: none;
   z-index: 1;

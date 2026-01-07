@@ -1,0 +1,31 @@
+<!-- Protocol Warning for local file browsing -->
+<div id="protocol-warning"
+    style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; background: var(--md-sys-color-surface-container-high, #1a1c1e); color: var(--md-sys-color-on-surface, #e2e2e6); padding: 40px; font-family: 'Rubik', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+    <div
+        style="max-width: 600px; background: var(--md-sys-color-error-container, #8c1d18); color: var(--md-sys-color-on-error-container, #f9dedc); padding: 32px; border-radius: 28px; box-shadow: var(--elevation-3);">
+        <span class="material-symbols-outlined" style="font-size: 48px; margin-bottom: 16px;">warning</span>
+        <h2 style="margin: 0 0 16px 0;">Local File Access Blocked</h2>
+        <p style="margin: 0 0 24px 0; line-height: 1.5;">Modern browsers block JavaScript Modules when opened
+            directly via <code>file://</code> for security reasons. To see the <strong>Material 3
+                Expressive</strong> redesign, you must use a local server.</p>
+        <div
+            style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px; text-align: left; margin-bottom: 24px;">
+            <p style="margin: 0 0 8px 0; font-weight: 500;">Run this in your terminal:</p>
+            <code style="display: block; color: #fff;">python -m http.server 8000</code>
+        </div>
+        <p style="margin: 0;">Then visit: <a href="http://localhost:8000"
+                style="color: inherit; font-weight: bold; text-decoration: underline;">http://localhost:8000</a></p>
+    </div>
+</div>
+<script>
+    (function () {
+        const warningEl = document.getElementById('protocol-warning');
+        if (warningEl) {
+            if (window.location.protocol === 'file:') {
+                warningEl.style.display = 'flex';
+            } else {
+                warningEl.style.display = 'none';
+            }
+        }
+    })();
+</script>

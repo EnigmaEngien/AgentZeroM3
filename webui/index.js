@@ -184,12 +184,23 @@ async function updateUserTime() {
 updateUserTime();
 setInterval(updateUserTime, 1000);
 
+let scrollScheduled = false;
+
+function scrollToBottom() {
+  if (scrollScheduled) return;
+  scrollScheduled = true;
+  requestAnimationFrame(() => {
+    const chatHistoryEl = document.getElementById("chat-history");
+    if (preferencesStore.autoScroll && chatHistoryEl) {
+      chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
+    }
+    scrollScheduled = false;
+  });
+}
+
 function setMessage(id, type, heading, content, temp, kvps = null) {
   const result = msgs.setMessage(id, type, heading, content, temp, kvps);
-  const chatHistoryEl = document.getElementById("chat-history");
-  if (preferencesStore.autoScroll && chatHistoryEl) {
-    chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
-  }
+  scrollToBottom();
   return result;
 }
 
@@ -270,7 +281,8 @@ export async function poll() {
 
     // Check if the response is valid
     if (!response) {
-      console.error("Invalid response from poll endpoint");
+      // In standalone/offline mode, sendJsonData might return null or undefined if the backend is 404
+      setConnectionStatus(false);
       return false;
     }
 
@@ -556,18 +568,27 @@ function scrollChanged(isAtBottom) {
   preferencesStore.autoScroll = isAtBottom;
 }
 
+let scrollUpdateScheduled = false;
+
 export function updateAfterScroll() {
-  // const toleranceEm = 1; // Tolerance in em units
-  // const tolerancePx = toleranceEm * parseFloat(getComputedStyle(document.documentElement).fontSize); // Convert em to pixels
-  const tolerancePx = 10;
-  const chatHistory = document.getElementById("chat-history");
-  if (!chatHistory) return;
+  if (scrollUpdateScheduled) return;
+  scrollUpdateScheduled = true;
 
-  const isAtBottom =
-    chatHistory.scrollHeight - chatHistory.scrollTop <=
-    chatHistory.clientHeight + tolerancePx;
+  requestAnimationFrame(() => {
+    const tolerancePx = 10;
+    const chatHistory = document.getElementById("chat-history");
+    if (!chatHistory) {
+      scrollUpdateScheduled = false;
+      return;
+    }
 
-  scrollChanged(isAtBottom);
+    const isAtBottom =
+      chatHistory.scrollHeight - chatHistory.scrollTop <=
+      chatHistory.clientHeight + tolerancePx;
+
+    scrollChanged(isAtBottom);
+    scrollUpdateScheduled = false;
+  });
 }
 globalThis.updateAfterScroll = updateAfterScroll;
 
@@ -577,6 +598,7 @@ async function startPolling() {
   const shortInterval = 25;
   const longInterval = 250;
   const shortIntervalPeriod = 100;
+  let failureCount = 0;
   let shortIntervalCount = 0;
 
   async function _doPoll() {
@@ -584,11 +606,32 @@ async function startPolling() {
 
     try {
       const result = await poll();
-      if (result) shortIntervalCount = shortIntervalPeriod; // Reset the counter when the result is true
-      if (shortIntervalCount > 0) shortIntervalCount--; // Decrease the counter on each call
-      nextInterval = shortIntervalCount > 0 ? shortInterval : longInterval;
+      if (result) {
+        shortIntervalCount = shortIntervalPeriod;
+        failureCount = 0;
+      } else {
+        // If poll returned false, it might be just "no updates" OR "offline"
+        // Check connection status set by poll()
+        if (!getConnectionStatus()) {
+          failureCount++;
+        } else {
+          failureCount = 0;
+        }
+      }
+
+      if (shortIntervalCount > 0) shortIntervalCount--;
+
+      // If we are offline (multiple failures), back off to 5 seconds
+      if (failureCount > 3) {
+        nextInterval = 5000;
+      } else {
+        nextInterval = shortIntervalCount > 0 ? shortInterval : longInterval;
+      }
+
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error in polling loop:", error);
+      failureCount++;
+      nextInterval = 5000;
     }
 
     // Call the function again after the selected interval

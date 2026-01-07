@@ -2,25 +2,47 @@
 // Import a component and recursively load its nested components
 // Returns the parsed document for additional processing
 
-// cache object to store loaded components
+// cache object to store loaded components (memory cache)
 const componentCache = {};
 
 // Lock map to prevent multiple simultaneous imports of the same component
 const importLocks = new Map();
 
+// Generate cache name from version
+const CACHE_NAME = 'components-cache-' + (globalThis.APP_VERSION || 'dev');
+
+// Clean up old caches on load
+(async () => {
+  if (!('caches' in window)) return;
+  try {
+    const keys = await caches.keys();
+    // Delete caches that don't match current version
+    await Promise.all(
+      keys.map(key => {
+        if (key.startsWith('components-cache-') && key !== CACHE_NAME) {
+          console.log('Deleting old cache:', key);
+          return caches.delete(key);
+        }
+      })
+    );
+  } catch (e) {
+    console.warn('Error cleaning caches:', e);
+  }
+})();
+
 export async function importComponent(path, targetElement) {
   // Create a unique key for this import based on the target element
   const lockKey = targetElement.id || targetElement.getAttribute('data-component-id') || targetElement;
-  
+
   // If this component is already being loaded, return early
   if (importLocks.get(lockKey)) {
-    console.log(`Component ${path} is already being loaded for target`, targetElement);
+    // console.log(`Component ${path} is already being loaded for target`, targetElement); // Reduce noise
     return;
   }
-  
+
   // Set the lock
   importLocks.set(lockKey, true);
-  
+
   try {
     if (!targetElement) {
       throw new Error("Target element is required");
@@ -33,28 +55,75 @@ export async function importComponent(path, targetElement) {
     const trimmedPath = path.replace(/^\/+/, "");
     const componentUrl = trimmedPath.startsWith("components/") ? trimmedPath : "components/" + trimmedPath;
 
-    // get html from cache or fetch it
+    // get html from memory cache, persistent cache, or fetch it
     let html;
+
+    // 1. Check Memory Cache
     if (componentCache[componentUrl]) {
       html = componentCache[componentUrl];
     } else {
-      const response = await fetch(componentUrl);
-      if (!response.ok) {
-        throw new Error(
-          `Error loading component ${path}: ${response.statusText}`
-        );
+      // 2. Check Persistent Cache (if available)
+      let cacheHit = false;
+      if ('caches' in window) {
+        try {
+          const cache = await caches.open(CACHE_NAME);
+          const cachedResponse = await cache.match(componentUrl);
+          if (cachedResponse) {
+            html = await cachedResponse.text();
+            componentCache[componentUrl] = html; // Update memory cache
+            cacheHit = true;
+          }
+        } catch (e) {
+          console.warn('Cache match error:', e);
+        }
       }
-      html = await response.text();
-      // store in cache
-      componentCache[componentUrl] = html;
+
+      // 3. Network Fetch
+      if (!cacheHit) {
+        const response = await fetch(componentUrl);
+        if (!response.ok) {
+          throw new Error(
+            `Error loading component ${path}: ${response.statusText}`
+          );
+        }
+        html = await response.text();
+
+        // Store in memory cache
+        componentCache[componentUrl] = html;
+
+        // Store in persistent cache
+        if ('caches' in window) {
+          try {
+            const cache = await caches.open(CACHE_NAME);
+            // Clone response to put in cache (though we already consumed text, so we put new Response)
+            await cache.put(componentUrl, new Response(html, {
+              headers: { 'Content-Type': 'text/html' }
+            }));
+          } catch (e) {
+            // ignore cache put errors
+          }
+        }
+      }
     }
+
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
 
+    // Separate nodes into styles, scripts, and body nodes to ensure correct loading order
+    // and avoid duplicates caused by doc.body.childNodes containing styles/scripts.
+    const styles = Array.from(doc.querySelectorAll("style, link[rel='stylesheet']"));
+    const scripts = Array.from(doc.querySelectorAll("script"));
+
+    // Get body nodes but filter out scripts and styles to avoid duplication
+    const bodyNodes = Array.from(doc.body.childNodes).filter(node =>
+      !scripts.includes(node) && !styles.includes(node)
+    );
+
+    // Order: styles first (for FOUC), then HTML, then scripts last
     const allNodes = [
-      ...doc.querySelectorAll("style"),
-      ...doc.querySelectorAll("script"),
-      ...doc.body.childNodes,
+      ...styles,
+      ...bodyNodes,
+      ...scripts,
     ];
 
     const loadPromises = [];
@@ -73,7 +142,8 @@ export async function importComponent(path, targetElement) {
               globalThis.location.origin
             ).toString();
 
-            // Check if module is already in cache
+            // Check if module is already in cache (we track promises)
+            // Note: Modules are cached by browser engine automatically, so we just await import
             if (!componentCache[resolvedUrl]) {
               const modulePromise = import(resolvedUrl);
               componentCache[resolvedUrl] = modulePromise;
@@ -199,7 +269,7 @@ export async function loadComponents(roots = [document.documentElement]) {
     if (components.length === 0) return;
 
     await Promise.all(
-      components.map(async (component) => {   
+      components.map(async (component) => {
         const path = component.getAttribute("path");
         if (!path) {
           console.error("x-component missing path attribute:", component);
@@ -225,7 +295,7 @@ export function getParentAttributes(el) {
         try {
           // Try to parse as JSON first
           attrs[attr.name] = JSON.parse(attr.value);
-        } catch(_e) {
+        } catch (_e) {
           // If not JSON, use raw value
           attrs[attr.name] = attr.value;
         }

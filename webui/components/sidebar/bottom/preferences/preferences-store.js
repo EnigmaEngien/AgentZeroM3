@@ -59,6 +59,17 @@ const model = {
   },
   _showUtils: false,
 
+  get accentHue() {
+    return this._accentHue;
+  },
+  set accentHue(value) {
+    // coerce to number and clamp 0-360
+    const v = Math.max(0, Math.min(360, Number(value) || 0));
+    this._accentHue = v;
+    this._applyAccentHue(v);
+  },
+  _accentHue: 220,
+
   // Initialize preferences and apply current state
   init() {
     try {
@@ -77,6 +88,13 @@ const model = {
         this._speech = false; // Default to speech off if localStorage is unavailable
       }
 
+      try {
+        const storedAccent = localStorage.getItem("accentHue");
+        if (storedAccent != null) this._accentHue = Number(storedAccent) || this._accentHue;
+      } catch {
+        this._accentHue = 220;
+      }
+
       // Apply all preferences
       this._applyDarkMode(this._darkMode);
       this._applyAutoScroll(this._autoScroll);
@@ -84,6 +102,7 @@ const model = {
       this._applyShowThoughts(this._showThoughts);
       this._applyShowJson(this._showJson);
       this._applyShowUtils(this._showUtils);
+      this._applyAccentHue(this._accentHue);
     } catch (e) {
       console.error("Failed to initialize preferences store", e);
     }
@@ -102,6 +121,12 @@ const model = {
       document.body.classList.add("light-mode");
     }
     localStorage.setItem("darkMode", value);
+    // Re-apply accent so palette matches the current brightness mode
+    try {
+      this._applyAccentHue(this._accentHue);
+    } catch (e) {
+      console.error("Failed to reapply accent after dark mode change", e);
+    }
   },
 
   _applySpeech(value) {
@@ -127,6 +152,61 @@ const model = {
       "display",
       value ? undefined : "none"
     );
+  },
+
+  _applyAccentHue(hue) {
+    try {
+      // Use HSL for flexible accent color; 80% saturation, 50% lightness by default
+      const h = Math.round(Number(hue) || 220);
+
+      // Decide palette based on current mode (dark / light)
+      const isDark = document.body.classList.contains("dark-mode");
+
+      // Material-like expressive tones (approximate):
+      // Light mode: primary darker, container very light
+      // Dark mode: primary lighter, container darker
+      const primaryS = 78; // saturation for primary
+      const lightPrimaryL = 42;
+      const darkPrimaryL = 72;
+      const primaryL = isDark ? darkPrimaryL : lightPrimaryL;
+
+      const primary = `hsl(${h} ${primaryS}% ${primaryL}%)`;
+
+      // Primary container is a softer tone derived from hue
+      const containerS = Math.max(30, primaryS - 30);
+      const lightContainerL = 94;
+      const darkContainerL = 28;
+      const containerL = isDark ? darkContainerL : lightContainerL;
+      const primaryContainer = `hsl(${h} ${containerS}% ${containerL}%)`;
+
+      // on-primary should provide readable contrast; pick white for darker primaries
+      const onPrimary = primaryL < 55 ? "#ffffff" : "#000000";
+
+      // Map a few supporting variables to influence UI components using them
+      document.documentElement.style.setProperty("--md-sys-color-primary", primary);
+      document.documentElement.style.setProperty("--md-sys-color-primary-container", primaryContainer);
+      document.documentElement.style.setProperty("--md-sys-color-on-primary", onPrimary);
+
+      // Keep surface variables consistent: adjust surface-container highlights slightly towards neutral
+      // For expressive themed accents we only nudge the surface containers slightly in dark mode
+      if (isDark) {
+        document.documentElement.style.setProperty("--md-sys-color-surface-container-high", "#2B2930");
+        document.documentElement.style.setProperty("--md-sys-color-surface-container", "#211F26");
+        document.documentElement.style.setProperty("--md-sys-color-surface-container-low", "#1D1B20");
+      } else {
+        document.documentElement.style.setProperty("--md-sys-color-surface-container-high", "#ECE6F0");
+        document.documentElement.style.setProperty("--md-sys-color-surface-container", "#F3EDF7");
+        document.documentElement.style.setProperty("--md-sys-color-surface-container-low", "#F7F2FA");
+      }
+
+      localStorage.setItem("accentHue", String(h));
+
+      // update any small UI swatches if present
+      const sw = document.getElementById("accent-swatch");
+      if (sw) sw.style.background = primary;
+    } catch (e) {
+      console.error("Failed to apply accent hue", e);
+    }
   },
 };
 

@@ -8,22 +8,14 @@ const settingsModalProxy = {
     // Computed property for filtered sections
     get filteredSections() {
         if (!this.settings || !this.settings.sections) return [];
-        const filteredSections = this.settings.sections.filter(section => section.tab === this.activeTab);
-
-        // If no sections match the current tab (or all tabs are missing), show all sections
-        if (filteredSections.length === 0) {
-            return this.settings.sections;
-        }
-
-        return filteredSections;
+        return this.settings.sections.filter(section => section.tab === this.activeTab);
     },
 
     // Switch tab method
     switchTab(tabName) {
-        // Update our component state
+        if (this.activeTab === tabName) return;
         this.activeTab = tabName;
 
-        // Update the store safely
         const store = Alpine.store('root');
         if (store) {
             store.activeTab = tabName;
@@ -31,161 +23,60 @@ const settingsModalProxy = {
 
         localStorage.setItem('settingsActiveTab', tabName);
 
-        // Auto-scroll active tab into view after a short delay to ensure DOM updates
-        setTimeout(() => {
+        // Debounce scroll into view to avoid layout thrashing
+        if (this._scrollTimeout) clearTimeout(this._scrollTimeout);
+        this._scrollTimeout = setTimeout(() => {
             const activeTab = document.querySelector('.settings-tab.active');
             if (activeTab) {
                 activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             }
 
-            // When switching to the scheduler tab, initialize Flatpickr components
             if (tabName === 'scheduler') {
-                console.log('Switching to scheduler tab, initializing Flatpickr');
-                const schedulerElement = document.querySelector('[x-data="schedulerSettings"]');
-                if (schedulerElement) {
-                    const schedulerData = Alpine.$data(schedulerElement);
-                    if (schedulerData) {
-                        // Start polling
-                        if (typeof schedulerData.startPolling === 'function') {
-                            schedulerData.startPolling();
-                        }
-
-                        // Initialize Flatpickr if editing or creating
-                        if (typeof schedulerData.initFlatpickr === 'function') {
-                            // Check if we're creating or editing and initialize accordingly
-                            if (schedulerData.isCreating) {
-                                schedulerData.initFlatpickr('create');
-                            } else if (schedulerData.isEditing) {
-                                schedulerData.initFlatpickr('edit');
-                            }
-                        }
-
-                        // Force an immediate fetch
-                        if (typeof schedulerData.fetchTasks === 'function') {
-                            schedulerData.fetchTasks();
-                        }
-                    }
-                }
+                this._initScheduler();
             }
-        }, 10);
+        }, 50);
+    },
+
+    _initScheduler() {
+        console.log('Initializing scheduler tab');
+        const schedulerElement = document.querySelector('[x-data="schedulerSettings"]');
+        if (schedulerElement) {
+            const schedulerData = Alpine.$data(schedulerElement);
+            if (schedulerData) {
+                if (typeof schedulerData.startPolling === 'function') schedulerData.startPolling();
+                if (typeof schedulerData.fetchTasks === 'function') schedulerData.fetchTasks();
+            }
+        }
     },
 
     async openModal() {
-        console.log('Settings modal opening');
         const modalEl = document.getElementById('settingsModal');
         const modalAD = Alpine.$data(modalEl);
 
-        // First, ensure the store is updated properly
         const store = Alpine.store('root');
-        if (store) {
-            // Set isOpen first to ensure proper state
-            store.isOpen = true;
-        }
+        if (store) store.isOpen = true;
 
-        //get settings from backend
         try {
             const set = await sendJsonData("/settings_get", null);
 
-            // First load the settings data without setting the active tab
             const settings = {
                 "title": "Settings",
                 "buttons": [
-                    {
-                        "id": "save",
-                        "title": "Save",
-                        "classes": "btn btn-ok"
-                    },
-                    {
-                        "id": "cancel",
-                        "title": "Cancel",
-                        "type": "secondary",
-                        "classes": "btn btn-cancel"
-                    }
+                    { "id": "save", "title": "Save", "classes": "btn btn-ok" },
+                    { "id": "cancel", "title": "Cancel", "type": "secondary", "classes": "btn btn-cancel" }
                 ],
                 "sections": set.settings.sections
             }
 
-            // Update modal data
             modalAD.isOpen = true;
             modalAD.settings = settings;
 
-            // Now set the active tab after the modal is open
-            // This ensures Alpine reactivity works as expected
-            setTimeout(() => {
-                // Get stored tab or default to 'agent'
-                const savedTab = localStorage.getItem('settingsActiveTab') || 'agent';
-                console.log(`Setting initial tab to: ${savedTab}`);
+            const savedTab = localStorage.getItem('settingsActiveTab') || 'agent';
+            modalAD.activeTab = savedTab;
+            if (store) store.activeTab = savedTab;
 
-                // Directly set the active tab
-                modalAD.activeTab = savedTab;
-
-                // Also update the store
-                if (store) {
-                    store.activeTab = savedTab;
-                }
-
-                localStorage.setItem('settingsActiveTab', savedTab);
-
-                // Add a small delay *after* setting the tab to ensure scrolling works
-                setTimeout(() => {
-                    const activeTabElement = document.querySelector('.settings-tab.active');
-                    if (activeTabElement) {
-                        activeTabElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                    }
-                    // Debug log
-                    const schedulerTab = document.querySelector('.settings-tab[title="Task Scheduler"]');
-                    console.log(`Current active tab after direct set: ${modalAD.activeTab}`);
-                    console.log('Scheduler tab active after direct initialization?',
-                        schedulerTab && schedulerTab.classList.contains('active'));
-
-                    // Explicitly start polling if we're on the scheduler tab
-                    if (modalAD.activeTab === 'scheduler') {
-                        console.log('Settings opened directly to scheduler tab, initializing polling');
-                        const schedulerElement = document.querySelector('[x-data="schedulerSettings"]');
-                        if (schedulerElement) {
-                            const schedulerData = Alpine.$data(schedulerElement);
-                            if (schedulerData && typeof schedulerData.startPolling === 'function') {
-                                schedulerData.startPolling();
-                                // Also force an immediate fetch
-                                if (typeof schedulerData.fetchTasks === 'function') {
-                                    schedulerData.fetchTasks();
-                                }
-                            }
-                        }
-                    }
-                }, 10); // Small delay just for scrolling
-
-            }, 5); // Keep a minimal delay for modal opening reactivity
-
-            // Add a watcher to disable the Save button when a task is being created or edited
-            const schedulerComponent = document.querySelector('[x-data="schedulerSettings"]');
-            if (schedulerComponent) {
-                // Watch for changes to the scheduler's editing state
-                const checkSchedulerEditingState = () => {
-                    const schedulerData = Alpine.$data(schedulerComponent);
-                    if (schedulerData) {
-                        // If we're on the scheduler tab and creating/editing a task, disable the Save button
-                        const saveButton = document.querySelector('.modal-footer button.btn-ok');
-                        if (saveButton && modalAD.activeTab === 'scheduler' &&
-                            (schedulerData.isCreating || schedulerData.isEditing)) {
-                            saveButton.disabled = true;
-                            saveButton.classList.add('btn-disabled');
-                        } else if (saveButton) {
-                            saveButton.disabled = false;
-                            saveButton.classList.remove('btn-disabled');
-                        }
-                    }
-                };
-
-                // Add a mutation observer to detect changes in the scheduler component's state
-                const observer = new MutationObserver(checkSchedulerEditingState);
-                observer.observe(schedulerComponent, { attributes: true, subtree: true, childList: true });
-
-                // Also watch for tab changes to update button state
-                modalAD.$watch('activeTab', checkSchedulerEditingState);
-
-                // Initial check
-                setTimeout(checkSchedulerEditingState, 100);
+            if (savedTab === 'scheduler') {
+                setTimeout(() => this._initScheduler(), 100);
             }
 
             return new Promise(resolve => {
@@ -199,91 +90,55 @@ const settingsModalProxy = {
 
     async handleButton(buttonId) {
         if (buttonId === 'save') {
-
             const modalEl = document.getElementById('settingsModal');
             const modalAD = Alpine.$data(modalEl);
             try {
-                resp = await window.sendJsonData("/settings_set", modalAD.settings);
+                const resp = await window.sendJsonData("/settings_set", modalAD.settings);
+                document.dispatchEvent(new CustomEvent('settings-updated', { detail: resp.settings }));
+                if (this.resolvePromise) this.resolvePromise({ status: 'saved', data: resp.settings });
             } catch (e) {
                 window.toastFetchError("Error saving settings", e)
-                return
+                return;
             }
-            document.dispatchEvent(new CustomEvent('settings-updated', { detail: resp.settings }));
-            this.resolvePromise({
-                status: 'saved',
-                data: resp.settings
-            });
         } else if (buttonId === 'cancel') {
             this.handleCancel();
         }
 
-        // Stop scheduler polling if it's running
-        this.stopSchedulerPolling();
-
-        // First update our component state
-        this.isOpen = false;
-
-        // Then safely update the store
-        const store = Alpine.store('root');
-        if (store) {
-            // Use a slight delay to avoid reactivity issues
-            setTimeout(() => {
-                store.isOpen = false;
-            }, 10);
-        }
+        this.closeAndCleanup();
     },
 
-    async handleCancel() {
-        this.resolvePromise({
-            status: 'cancelled',
-            data: null
-        });
-
-        // Stop scheduler polling if it's running
+    closeAndCleanup() {
         this.stopSchedulerPolling();
-
-        // First update our component state
         this.isOpen = false;
-
-        // Then safely update the store
         const store = Alpine.store('root');
-        if (store) {
-            // Use a slight delay to avoid reactivity issues
-            setTimeout(() => {
-                store.isOpen = false;
-            }, 10);
-        }
+        if (store) store.isOpen = false;
     },
 
-    // Add a helper method to stop scheduler polling
+    handleCancel() {
+        if (this.resolvePromise) this.resolvePromise({ status: 'cancelled', data: null });
+        this.closeAndCleanup();
+    },
+
     stopSchedulerPolling() {
-        // Find the scheduler component and stop polling if it exists
         const schedulerElement = document.querySelector('[x-data="schedulerSettings"]');
         if (schedulerElement) {
             const schedulerData = Alpine.$data(schedulerElement);
             if (schedulerData && typeof schedulerData.stopPolling === 'function') {
-                console.log('Stopping scheduler polling on modal close');
                 schedulerData.stopPolling();
             }
         }
     },
 
     async handleFieldButton(field) {
-        console.log(`Button clicked: ${field.id}`);
-
-        if (field.id === "mcp_servers_config") {
-            openModal("settings/mcp/client/mcp-servers.html");
-        } else if (field.id === "backup_create") {
-            openModal("settings/backup/backup.html");
-        } else if (field.id === "backup_restore") {
-            openModal("settings/backup/restore.html");
-        } else if (field.id === "show_a2a_connection") {
-            openModal("settings/external/a2a-connection.html");
-        } else if (field.id === "external_api_examples") {
-            openModal("settings/external/api-examples.html");
-        } else if (field.id === "memory_dashboard") {
-            openModal("settings/memory/memory-dashboard.html");
-        }
+        const modals = {
+            "mcp_servers_config": "settings/mcp/client/mcp-servers.html",
+            "backup_create": "settings/backup/backup.html",
+            "backup_restore": "settings/backup/restore.html",
+            "show_a2a_connection": "settings/external/a2a-connection.html",
+            "external_api_examples": "settings/external/api-examples.html",
+            "memory_dashboard": "settings/memory/memory-dashboard.html"
+        };
+        if (modals[field.id]) openModal(modals[field.id]);
     }
 };
 

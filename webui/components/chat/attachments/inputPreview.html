@@ -8,20 +8,20 @@
 
         <div x-show="$store.chatAttachments.hasAttachments" class="preview-section">
             <template x-for="(attachment, index) in $store.chatAttachments.attachments" :key="index">
-                <div class="attachment-item"
-                    :class="{'image-type': attachment.type === 'image', 'file-type': attachment.type === 'file'}">
+                <div class="preview-item"
+                    :class="{'image-preview': attachment.type === 'image', 'file-preview': attachment.type === 'file'}">
                     <template x-if="attachment.type === 'image'">
-                        <img :src="attachment.url" class="attachment-preview" :alt="attachment.name" style="cursor: pointer;"
+                        <img :src="attachment.url" :alt="attachment.name"
                             @click="$store.imageViewer.open(attachment.url, { name: attachment.name })">
                     </template>
                     <template x-if="attachment.type === 'file'">
-                        <div>
+                        <div class="file-content">
                             <img :src="attachment.displayInfo.previewUrl" class="file-icon" :alt="attachment.extension">
                             <span class="file-title" x-text="attachment.name"></span>
                         </div>
                     </template>
-                    <button @click="$store.chatAttachments.removeAttachment(index)"
-                        class="remove-attachment">&times;</button>
+                    <button @click="$store.chatAttachments.removeAttachment(index)" class="remove-preview-btn"
+                        aria-label="Remove attachment">&times;</button>
                 </div>
             </template>
         </div>

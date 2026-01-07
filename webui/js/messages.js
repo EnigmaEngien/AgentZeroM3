@@ -155,11 +155,45 @@ export function _drawMessage(
       if (!minMaxBtn) {
         minMaxBtn = document.createElement("div");
         minMaxBtn.classList.add("msg-min-max-btns");
-        minMaxBtn.innerHTML = `
-          <a href="#" class="msg-min-max-btn" @click.prevent="$store.messageResize.minimizeMessageClass('${mainClass}', $event)"><span class="material-symbols-outlined" x-text="$store.messageResize.getSetting('${mainClass}').minimized ? 'expand_content' : 'minimize'"></span></a>
-          <a href="#" class="msg-min-max-btn" x-show="!$store.messageResize.getSetting('${mainClass}').minimized" @click.prevent="$store.messageResize.maximizeMessageClass('${mainClass}', $event)"><span class="material-symbols-outlined" x-text="$store.messageResize.getSetting('${mainClass}').maximized ? 'expand' : 'expand_all'"></span></a>
-        `;
+        minMaxBtn.innerHTML = "";
+
+
+
+        const minBtn = document.createElement("a");
+        minBtn.href = "#";
+        minBtn.classList.add("msg-min-max-btn");
+        minBtn.innerHTML = `<span class="material-symbols-outlined" x-text="$store.messageResize.getSetting('${mainClass}').minimized ? 'expand_content' : 'minimize'"></span>`;
+        minBtn.onclick = (e) => {
+          e.preventDefault();
+          Alpine.store('messageResize').minimizeMessageClass(mainClass, e);
+        };
+        minMaxBtn.appendChild(minBtn);
+
+        const maxBtn = document.createElement("a");
+        maxBtn.href = "#";
+        maxBtn.classList.add("msg-min-max-btn", "msg-max-btn");
+        maxBtn.innerHTML = `<span class="material-symbols-outlined">expand_all</span>`;
+        maxBtn.onclick = (e) => {
+          e.preventDefault();
+          const isMax = Alpine.store('messageResize').getSetting(mainClass).maximized;
+          Alpine.store('messageResize').maximizeMessageClass(mainClass, e);
+          maxBtn.querySelector('span').textContent = isMax ? 'expand_all' : 'expand';
+        };
+        minMaxBtn.appendChild(maxBtn);
+
         headingElement.appendChild(minMaxBtn);
+      }
+
+      // Update button states on every draw
+      const settings = Alpine.store('messageResize').getSetting(mainClass);
+      const minBtn = headingElement.querySelector(".msg-min-max-btn:not(.msg-source-btn):not(.msg-max-btn)");
+      if (minBtn) {
+        minBtn.querySelector('span').textContent = settings.minimized ? 'expand_content' : 'minimize';
+      }
+      const maxBtn = headingElement.querySelector(".msg-max-btn");
+      if (maxBtn) {
+        maxBtn.style.display = settings.minimized ? 'none' : '';
+        maxBtn.querySelector('span').textContent = settings.maximized ? 'expand' : 'expand_all';
       }
     }
   } else {
@@ -266,28 +300,31 @@ export function _drawMessage(
 }
 
 export function addBlankTargetsToLinks(str) {
-  const doc = new DOMParser().parseFromString(str, "text/html");
-
-  doc.querySelectorAll("a").forEach((anchor) => {
-    const href = anchor.getAttribute("href") || "";
-    if (
-      href.startsWith("#") ||
-      href.trim().toLowerCase().startsWith("javascript")
-    )
-      return;
-    if (
-      !anchor.hasAttribute("target") ||
-      anchor.getAttribute("target") === ""
-    ) {
-      anchor.setAttribute("target", "_blank");
+  // Regex to match <a> tags and check their attributes
+  // slightly crude but vastly faster than DOMParser for this specific task
+  return str.replace(/<a\s+([^>]*?)>/gi, (match, attrs) => {
+    // If it's a fragment link or js, ignore
+    if (/href=["']?#/.test(attrs) || /href=["']?javascript/i.test(attrs)) {
+      return match;
     }
 
-    const rel = (anchor.getAttribute("rel") || "").split(/\s+/).filter(Boolean);
-    if (!rel.includes("noopener")) rel.push("noopener");
-    if (!rel.includes("noreferrer")) rel.push("noreferrer");
-    anchor.setAttribute("rel", rel.join(" "));
+    // Check if target is already set
+    if (!/target=["']?_blank["']?/i.test(attrs)) {
+      // Add target="_blank"
+      match = match.replace('<a ', '<a target="_blank" ');
+    }
+
+    // Check if rel is set correctly
+    if (!/rel=["']?[^"']*noopener[^"']*["']?/i.test(attrs)) {
+      if (/rel=["']/i.test(attrs)) {
+        match = match.replace(/rel=["'](.*?)["']/i, 'rel="$1 noopener noreferrer"');
+      } else {
+        match = match.replace('<a ', '<a rel="noopener noreferrer" ');
+      }
+    }
+
+    return match;
   });
-  return doc.body.innerHTML;
 }
 
 export function drawMessageDefault(
@@ -323,10 +360,36 @@ export function drawMessageAgent(
   temp,
   kvps = null
 ) {
+  // Attempt to parse content if it contains a JSON block (Agent Zero reasoning format)
+  let parsedContent = null;
+  let rawJsonBlock = null;
+  if (content && typeof content === 'string') {
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        const maybeJson = JSON.parse(jsonMatch[0].trim());
+        if (maybeJson && (maybeJson.thoughts || maybeJson.tool_name || maybeJson.headline)) {
+          parsedContent = maybeJson;
+          rawJsonBlock = jsonMatch[0];
+          // If we found JSON, remove it from the display content, but keep anything before it
+          content = content.replace(jsonMatch[0], "").trim();
+        }
+      } catch (e) {
+        // Not valid JSON or doesn't have our keys, ignore
+      }
+    }
+  }
+
+  if (parsedContent) {
+    heading = parsedContent.headline || heading;
+    kvps = { ...(kvps || {}), ...parsedContent };
+  }
+
   let kvpsFlat = null;
   if (kvps) {
     kvpsFlat = { ...kvps, ...(kvps["tool_args"] || {}) };
     delete kvpsFlat["tool_args"];
+    // Keep headline in KVPs too if user wants "hole reasoning"
   }
 
   _drawMessage(
@@ -450,7 +513,7 @@ export function drawMessageUser(
       messageDiv.appendChild(attachmentsContainer);
     }
     // Important: Clear existing attachments to re-render, preventing duplicates on update
-    attachmentsContainer.innerHTML = ""; 
+    attachmentsContainer.innerHTML = "";
 
     kvps.attachments.forEach((attachment) => {
       const attachmentDiv = document.createElement("div");
@@ -464,6 +527,7 @@ export function drawMessageUser(
         const img = document.createElement("img");
         img.src = displayInfo.previewUrl;
         img.alt = displayInfo.filename;
+        img.loading = "lazy";
         img.classList.add("attachment-preview");
         img.style.cursor = "pointer";
 
@@ -480,6 +544,7 @@ export function drawMessageUser(
           const iconImg = document.createElement("img");
           iconImg.src = displayInfo.previewUrl;
           iconImg.alt = `${displayInfo.extension} file`;
+          iconImg.loading = "lazy";
           iconImg.classList.add("file-icon");
           attachmentDiv.appendChild(iconImg);
         }
@@ -708,7 +773,24 @@ function drawKvps(container, kvps, latex) {
       tdiv.classList.add("kvps-val");
       td.appendChild(tdiv);
 
-      if (Array.isArray(value)) {
+      if (key === "thoughts" || key === "reasoning") {
+        const list = document.createElement("div");
+        list.classList.add("thoughts-list");
+        if (Array.isArray(value)) {
+          value.forEach(item => {
+            const bullet = document.createElement("div");
+            bullet.classList.add("thought-item");
+            bullet.innerHTML = convertHTML(item);
+            list.appendChild(bullet);
+          });
+        } else {
+          const bullet = document.createElement("div");
+          bullet.classList.add("thought-item");
+          bullet.innerHTML = convertHTML(value);
+          list.appendChild(bullet);
+        }
+        tdiv.appendChild(list);
+      } else if (Array.isArray(value)) {
         for (const item of value) {
           addValue(item);
         }
@@ -730,6 +812,7 @@ function drawKvps(container, kvps, latex) {
         if (typeof value === "string" && value.startsWith("img://")) {
           const imgElement = document.createElement("img");
           imgElement.classList.add("kvps-img");
+          imgElement.loading = "lazy";
           imgElement.src = value.replace("img://", "/image_get?path=");
           imgElement.alt = "Image Attachment";
           tdiv.appendChild(imgElement);
@@ -820,7 +903,24 @@ function drawKvpsIncremental(container, kvps, latex) {
 
       addActionButtonsToElement(tdiv);
 
-      if (Array.isArray(value)) {
+      if (key === "thoughts" || key === "reasoning") {
+        const list = document.createElement("div");
+        list.classList.add("thoughts-list");
+        if (Array.isArray(value)) {
+          value.forEach(item => {
+            const bullet = document.createElement("div");
+            bullet.classList.add("thought-item");
+            bullet.innerHTML = convertHTML(item);
+            list.appendChild(bullet);
+          });
+        } else {
+          const bullet = document.createElement("div");
+          bullet.classList.add("thought-item");
+          bullet.innerHTML = convertHTML(value);
+          list.appendChild(bullet);
+        }
+        tdiv.appendChild(list);
+      } else if (Array.isArray(value)) {
         for (const item of value) {
           addValue(item, tdiv);
         }
@@ -845,6 +945,7 @@ function drawKvpsIncremental(container, kvps, latex) {
       if (typeof value === "string" && value.startsWith("img://")) {
         const imgElement = document.createElement("img");
         imgElement.classList.add("kvps-img");
+        imgElement.loading = "lazy";
         imgElement.src = value.replace("img://", "/image_get?path=");
         imgElement.alt = "Image Attachment";
         tdiv.appendChild(imgElement);
@@ -864,7 +965,7 @@ function drawKvpsIncremental(container, kvps, latex) {
         // Add action buttons to the row
         // const row = tdiv.closest(".kvps-row");
         // if (row) {
-          // addActionButtonsToElement(pre);
+        // addActionButtonsToElement(pre);
         // }
 
         // KaTeX rendering for markdown
@@ -903,7 +1004,7 @@ function convertImageTags(content) {
   const updatedContent = content.replace(
     imageTagRegex,
     (match, base64Content) => {
-      return `<img src="data:image/jpeg;base64,${base64Content}" alt="Image Attachment" style="max-width: 250px !important;"/>`;
+      return `<img src="data:image/jpeg;base64,${base64Content}" alt="Image Attachment" loading="lazy" style="max-width: 250px !important;"/>`;
     }
   );
 

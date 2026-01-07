@@ -155,8 +155,8 @@
             gap: 0.75rem;
             padding: 1rem;
             margin-bottom: 0.5rem;
-            background: rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--md-sys-color-surface-container-low);
+            border: 1px solid var(--md-sys-color-outline);
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -200,24 +200,14 @@
             margin-top: 0.1rem;
         }
 
-        .notification-info .notification-icon {
-            color: #2196F3;
-        }
-
-        .notification-success .notification-icon {
-            color: #4CAF50;
-        }
-
-        .notification-warning .notification-icon {
-            color: #FF9800;
-        }
-
-        .notification-error .notification-icon {
-            color: #F44336;
-        }
-
+        .notification-info .notification-icon,
+        .notification-success .notification-icon,
+        .notification-warning .notification-icon,
+        .notification-error .notification-icon,
         .notification-progress .notification-icon {
-            color: #9C27B0;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+        .notification-progress .notification-icon {
             animation: spin 2s linear infinite;
         }
 

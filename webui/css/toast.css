@@ -1,9 +1,9 @@
 #toast {
   position: relative;
   width: 100%;
-  background-color: #333;
+  background-color: var(--md-sys-color-surface);
   font-family: "Rubik", Arial, Helvetica, sans-serif;
-  color: #fff;
+  color: var(--md-sys-color-on-surface);
   padding: 0.6rem 0.9rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   display: none;
@@ -50,16 +50,10 @@
   transform: translateY(100%);
 }
 
-#toast.toast--success {
-  background-color: #4CAF50;
-}
-
-#toast.toast--error {
-  background-color: #731811;
-}
-
+#toast.toast--success,
+#toast.toast--error,
 #toast.toast--info {
-  background-color: #2196F3;
+  background-color: var(--md-sys-color-surface-container-high);
 }
 
 .toast__close,

@@ -72,55 +72,57 @@
     </div>
 
     <style>
-        /* Welcome Screen Styles */
+        /* Welcome Screen - Material 3 Expressive */
         .welcome-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 3%;
+            padding: 48px 24px;
             text-align: center;
-            background: var(--color-background);
-            color: var(--color-text);
+            background-color: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
             min-height: 100vh;
+            font-family: var(--font-family-main);
+            animation: welcomeFadeIn var(--duration-long2) var(--easing-emphasized);
         }
 
-        /* Welcome container styles */
+        @keyframes welcomeFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
         .welcome-logo-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            margin-bottom: 24px;
         }
 
         .welcome-logo {
-            width: 7rem;
-            height: 7rem;
-        }
-
-        /* Themes adjustments for logo */
-        .light-mode .welcome-logo {
-            filter: invert(0.5);
-        }
-
-        .dark-mode .welcome-logo {
-            filter: invert(0.8);
+            width: 120px;
+            height: 120px;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
         }
 
         .welcome-title {
-            font-size: 2rem;
+            font-size: 3rem;
+            /* Headline Large */
             font-weight: 400;
-            margin: var(--spacing-xs) 0 0 0;
-            color: var(--color-text);
-        }
-
-        .welcome-action-title {
-            margin-bottom: 0;
+            margin: 0 0 16px 0;
+            color: var(--md-sys-color-on-surface);
+            letter-spacing: -0.5px;
         }
 
         .welcome-subtitle {
-            font-size: 1rem;
-            margin-bottom: 2rem;
-            color: var(--color-secondary);
+            font-size: 1.25rem;
+            /* Body Large */
+            margin: 0 0 48px 0;
+            color: var(--md-sys-color-on-surface-variant);
             max-width: 600px;
             line-height: 1.5;
         }
@@ -128,111 +130,113 @@
         .welcome-actions {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1.2rem;
-            max-width: 520px;
+            gap: 24px;
+            max-width: 900px;
             width: 100%;
-            margin: 1.5rem 0;
         }
 
         .welcome-action-card {
-            background: var(--color-panel);
-            border: 1px solid var(--color-border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            transition: all 0.3s ease;
+            background-color: var(--md-sys-color-surface-container-low);
+            border-radius: 28px;
+            /* Expressive Shape */
+            padding: 32px 24px;
+            transition: all var(--duration-medium) var(--easing-standard);
             cursor: pointer;
-            text-decoration: none;
-            color: inherit;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            min-height: 10rem;
-            justify-content: center;
+            gap: 16px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--md-sys-color-outline-variant);
+        }
+
+        /* State Layer */
+        .welcome-action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--md-sys-color-primary);
+            opacity: 0;
+            transition: opacity var(--duration-short) var(--easing-linear);
         }
 
         .welcome-action-card:hover {
-            border-color: var(--color-primary);
-            background: var(--color-message-bg);
+            background-color: var(--md-sys-color-surface-container-high);
+            transform: translateY(-4px);
+            box-shadow: var(--elevation-2);
+            border-color: var(--md-sys-color-primary);
+        }
+
+        .welcome-action-card:hover::before {
+            opacity: 0.08;
+        }
+
+        .welcome-action-card:active::before {
+            opacity: 0.12;
         }
 
         .welcome-action-icon {
-            font-size: 2rem;
-            margin-bottom: 0;
-            color: var(--color-highlight-dark);
+            font-size: 2.5rem;
+            color: var(--md-sys-color-primary);
+            transition: transform var(--duration-medium) var(--easing-emphasized);
+        }
+
+        .welcome-action-card:hover .welcome-action-icon {
+            transform: scale(1.1);
+        }
+
+        .welcome-action-title {
+            font-size: 1.25rem;
+            /* Title Large */
+            font-weight: 500;
+            margin: 0;
+            color: var(--md-sys-color-on-surface);
         }
 
         .welcome-action-description {
-            font-size: 0.8rem;
-            color: var(--color-secondary);
-            line-height: 1.3;
+            font-size: 0.875rem;
+            /* Body Medium */
+            color: var(--md-sys-color-on-surface-variant);
+            margin: 0;
+            line-height: 1.4;
         }
 
-        /* Light mode adjustments */
-        .light-mode .welcome-title {
-            color: #2d2d2d;
-        }
-
-        .light-mode .welcome-subtitle {
-            color: #666;
-        }
-
-        .light-mode .welcome-action-title {
-            color: #2d2d2d;
-        }
-
-        .light-mode .welcome-action-description {
-            color: #666;
-        }
-
-        .light-mode .welcome-footer {
-            color: #666;
-        }
-
-        /* Responsive design */
+        /* Mobile Adjustments */
         @media (max-width: 768px) {
             .welcome-container {
-                padding: 1rem;
-                padding-top: 3rem;
-            }
-
-            .welcome-logo {
-                width: 5rem;
-                height: 5rem;
-            }
-
-            .welcome-logo-container {
-                margin-top: 2rem;
+                padding: 24px 16px;
             }
 
             .welcome-title {
-                font-size: 1.5rem;
-                margin: 0 !important;
-            }
-
-            .welcome-subtitle {
-                font-size: 1rem;
-                margin-top: var(--spacing-xs);
-                margin-bottom: 0;
+                font-size: 2rem;
             }
 
             .welcome-actions {
                 grid-template-columns: 1fr;
-                gap: 1rem;
-                margin-bottom: 2rem;
+                gap: 16px;
             }
 
             .welcome-action-card {
-                padding: 1.5rem;
-                min-height: 120px;
+                padding: 24px;
+                flex-direction: row;
+                text-align: left;
+                gap: 20px;
+                border-radius: 20px;
             }
 
             .welcome-action-icon {
                 font-size: 2rem;
             }
 
-            .welcome-action-title {
-                font-size: 1.1rem;
+            .welcome-action-card div {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
             }
         }
     </style>

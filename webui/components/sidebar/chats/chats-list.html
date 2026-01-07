@@ -35,71 +35,73 @@
   </div>
 
   <style>
-    .chats-list-container .section-header {
-      position: sticky;
-      top: 0;
-      flex-shrink: 0;
-      z-index: 10;
-    }
-
-    /* Chats list container and items */
     .chats-list-container {
       display: flex;
       flex-direction: column;
       flex: 1;
       min-height: 0;
-      margin-top: var(--spacing-md);
+      margin-top: var(--spacing-sm);
     }
 
     .chats-config-list {
       flex: 1;
       min-height: 0;
-      overflow: scroll;
+      overflow-y: auto;
       scroll-behavior: smooth;
-      max-height: 100%;
+      list-style: none;
+      padding: 0;
+      margin: 0;
       scrollbar-width: none;
-      /* Firefox */
-      -ms-overflow-style: none;
-      /* IE/Edge */
     }
 
-    /* Hide scrollbar for Chrome/Safari/Webkit */
     .chats-config-list::-webkit-scrollbar {
       display: none;
     }
 
+    /* M3 Navigation Item Base */
     .chat-container {
       position: relative;
       display: flex;
       align-items: center;
       justify-content: space-between;
       width: 100%;
-      min-height: 40px;
-      border-radius: 4px;
-      transition: background-color 0.2s ease-in-out;
-      overflow: hidden;
+      height: 48px;
+      margin-bottom: 4px;
+      padding: 0 16px;
+      border-radius: 24px;
       cursor: pointer;
+      transition: background-color var(--duration-short) linear,
+        transform var(--duration-short) var(--easing-standard);
+      overflow: hidden;
+      color: var(--md-sys-color-on-surface);
     }
 
     .chat-container:hover {
-      background-color: var(--color-background-hover);
+      background-color: color-mix(in srgb, var(--md-sys-color-on-surface-variant) 8%, transparent);
+    }
+
+    /* Selected State - M3 Primary Container */
+    .chat-selected {
+      background-color: var(--md-sys-color-primary-container) !important;
+      color: var(--md-sys-color-on-primary-container) !important;
+    }
+
+    .chat-selected .chat-name {
+      font-weight: 700;
     }
 
     .chat-list-button {
       display: flex;
       align-items: center;
       flex-grow: 1;
-      padding: 8px;
-      overflow: hidden;
-      gap: 0.5em;
+      min-width: 0;
+      gap: 12px;
     }
 
     .project-color-ball {
-      width: 0.6em;
-      height: 0.6em;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
-      display: inline-block;
-      box-sizing: border-box;
       flex-shrink: 0;
     }
 
@@ -107,62 +109,41 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      font-size: var(--font-size-small);
+      font-size: 0.875rem;
+      /* M3 Label Large */
+      letter-spacing: 0.1px;
     }
 
+    /* Modern Delete Button */
     .edit-button {
       flex-shrink: 0;
-      margin-right: 8px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background-color: transparent;
-      border: 1px solid var(--color-border);
-      border-radius: 0.1875rem;
-      color: var(--color-primary);
+      border: none;
+      border-radius: 50%;
+      color: inherit;
+      opacity: 0.6;
       cursor: pointer;
-      padding: 0.125rem 0.5rem;
-      transition: all var(--transition-speed) ease-in-out;
-      width: 2rem;
-      height: 2rem;
+      font-size: 14px;
+      transition: all var(--duration-short) var(--easing-standard);
     }
 
     .edit-button:hover {
-      border-color: var(--color-primary);
-      background-color: #32455690;
-    }
-
-    .edit-button:active {
-      background-color: #131a2090;
-      color: rgba(253, 253, 253, 0.35);
+      background-color: color-mix(in srgb, currentColor 12%, transparent);
+      opacity: 1;
     }
 
     .empty-list-message {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100px;
-      color: var(--color-secondary);
+      padding: 24px;
       text-align: center;
-      opacity: 0.7;
-      font-style: italic;
+      color: var(--md-sys-color-on-surface);
+      opacity: 0.6;
+      font-size: 0.8125rem;
     }
-
-    .light-mode .empty-list-message {
-      color: var(--color-secondary-light);
-    }
-
-    /* Selected chat accent */
-    .chat-selected {
-      background-color: var(--color-background-hover);
-    }
-
-    .chat-selected .chat-name {
-      font-size: var(--font-size-normal);
-      font-weight: bold;
-    }
-
-    /* .chat-list-button.font-bold { position: relative; background-color: var(--color-border) 0.05; } */
-    /* .chat-list-button.font-bold::before { content: ""; position: absolute; left: 0; top: 0; height: 100%; width: 3px; background-color: var(--color-border); border-top-left-radius: 3px; border-bottom-left-radius: 3px; } */
-    /* .light-mode .chat-list-button.font-bold { background-color: var(--color-border) 0.05; } */
-    /* .light-mode .chat-list-button.font-bold::before { background-color: var(--color-border); } */
   </style>
 </body>
 

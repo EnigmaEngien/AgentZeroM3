@@ -34,10 +34,10 @@
                                 <div class="status-dot" x-data="{ connected: server.connected }">
                                     <svg viewBox="0 0 16 16" width="12" height="12">
                                         <circle cx="8" cy="8" r="6" x-bind:fill="server.connected 
-                                                ? (server.error ? '#e40138' : (server.tool_count > 0 ? '#00c340' : '#e40138')) 
+                                                ? (server.error ? 'var(--md-sys-color-error)' : (server.tool_count > 0 ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-error)')) 
                                                 : 'none'" x-bind:opacity="server.connected ? 1 : 0" />
-                                        <circle cx="8" cy="8" r="6" fill="none" stroke="#e40138" stroke-width="2"
-                                            x-bind:opacity="server.connected ? 0 : 1" />
+                                        <circle cx="8" cy="8" r="6" fill="none" stroke="var(--md-sys-color-error)"
+                                            stroke-width="2" x-bind:opacity="server.connected ? 0 : 1" />
                                     </svg>
                                 </div>
 
@@ -73,107 +73,125 @@
     </div>
 
     <style>
-
-    .mcp-servers-loading {
-        width: 100%;
-        text-align: center;
-        margin-top: 2rem;
-        margin-bottom: 2rem;
-    }
+        /* MCP Servers Configuration - Material 3 Expressive */
         #mcp-servers-config-json {
             width: 100%;
-            height: 40em;
+            height: 480px;
+            background-color: var(--md-sys-color-surface-container-highest);
+            border: 1px solid var(--md-sys-color-outline-variant);
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        h3 {
+            font-family: var(--font-family-main);
+            font-size: 1.25rem;
+            /* Title Large */
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 24px 0 16px 0;
+        }
+
+        .btn.slim {
+            padding: 6px 16px;
+            font-size: 0.8125rem;
+            border-radius: 100px;
+            height: auto;
+            min-height: 32px;
+            margin: 0 !important;
         }
 
         .server-list {
-            margin-top: 0.5em;
-            margin-bottom: 1em;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 24px;
         }
 
         .server-item {
+            background-color: var(--md-sys-color-surface-container-low);
+            border: 1px solid var(--md-sys-color-outline-variant);
+            border-radius: 16px;
+            /* M3 Medium Shape */
+            padding: 12px 16px;
             display: flex;
             flex-direction: column;
-            padding: 0.5em 0.7em;
-            margin-bottom: 0.4em;
-            min-height: 2.2em;
-            /* Ensure consistent height even without errors */
-            border: 1px solid rgba(192, 192, 192, 0.161);
-            /* Silver with 30% opacity */
-            border-radius: 4px;
+            gap: 4px;
+            transition: all var(--duration-short) var(--easing-standard);
         }
 
-        .server-list {
-            margin-top: 0.5em;
-            margin-bottom: 1em;
-            display: flex;
-            flex-direction: column;
-            gap: 0.2em;
+        .server-item:hover {
+            background-color: var(--md-sys-color-surface-container-high);
+            border-color: var(--md-sys-color-outline);
         }
 
         .server-main-row {
             display: flex;
             align-items: center;
-            gap: 0.8em;
+            gap: 12px;
             width: 100%;
         }
 
-        .status-dot {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .status-dot svg circle {
+            transition: all var(--duration-medium) var(--easing-standard);
         }
 
         .server-name {
-            font-weight: 600;
-            min-width: 12em;
+            font-family: var(--font-family-main);
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+            font-size: 0.9375rem;
+            min-width: 120px;
         }
 
+        /* Tool Count as Tonal Chip */
         .tool-count {
-            color: var(--c-fg2);
-            font-size: 0.9em;
-            user-select: none;
-        }
-
-        .tool-count {
-            cursor: default;
+            background-color: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color var(--duration-short) var(--easing-linear);
         }
 
         .tool-count:hover {
-            opacity: 0.8;
-            cursor: pointer;
-        }
-
-        .config-status {
-            color: #e40138;
-            font-size: 0.85em;
-            opacity: 0.8;
+            background-color: color-mix(in srgb, var(--md-sys-color-secondary-container) 92%, black);
         }
 
         .log-btn {
             margin-left: auto;
-            font-size: 0.9em;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--md-sys-color-primary);
             cursor: pointer;
-            text-decoration: none;
-            opacity: 0.85;
+            padding: 6px 12px;
+            border-radius: 100px;
+            transition: background-color var(--duration-short) var(--easing-linear);
         }
 
         .log-btn:hover {
-            opacity: 1;
+            background-color: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
         }
 
         .server-error-row {
-            margin-left: 1.8em;
-            margin-top: 0.1em;
-            font-size: 0.8em;
-            color: #F44336;
-            opacity: 0.85;
-            line-height: 1.2;
+            margin-left: 28px;
+            font-size: 0.75rem;
+            color: var(--md-sys-color-error);
+            font-weight: 400;
         }
 
-        .no-servers {
-            padding: 0.5em;
-            color: var(--c-fg2);
+        .mcp-servers-loading {
+            width: 100%;
+            text-align: center;
+            padding: 32px;
+            color: var(--md-sys-color-on-surface-variant);
             font-style: italic;
+            font-size: 0.875rem;
         }
     </style>
 

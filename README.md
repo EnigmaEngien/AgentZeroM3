@@ -116,13 +116,31 @@ A detailed setup guide for Windows, macOS, and Linux with a video can be found i
 ### ⚡ Quick Start
 
 ```bash
-# Pull and run with Docker
+# Clone the repository
+git clone https://github.com/EnigmaEngien/AgentZeroM3.git
+cd AgentZeroM3
 
-docker pull agent0ai/agent-zero
-docker run -p 50001:80 agent0ai/agent-zero
+# Start with Docker Compose
+docker-compose up --build -d
 
-# Visit http://localhost:50001 to start
+# Visit http://localhost:50080 to start
 ```
+
+## 🐳 Docker Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/EnigmaEngien/AgentZeroM3.git
+   cd AgentZeroM3
+   ```
+
+2. **Start with Docker Compose:**
+   ```bash
+   docker-compose up --build -d
+   ```
+
+3. **Access the Web UI:**
+   Open your browser and navigate to `http://localhost:50080`
 
 ## 🐳 Fully Dockerized, with Speech-to-Text and TTS
 
