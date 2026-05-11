@@ -1,26 +1,21 @@
 /* MIC BUTTON */
-#microphone-button {  
-}
 
 /* Only apply hover effects on devices that support hover */
 @media (hover: hover) {
   #microphone-button:hover {
-    background-color: var(--md-sys-color-surface-container);
-    transform: scale(1.05);
-    -webkit-transform: scale(1.05);
-    transform-origin: center;
+    background-color: #636363;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08),
+      0 6px 14px rgba(0, 0, 0, 0.18);
   }
 }
 
 #microphone-button:active {
-  background-color: var(--md-sys-color-surface-container-low);
-  transform: scale(1);
-  -webkit-transform: scale(1);
-  transform-origin: center;
+  background-color: #444444;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
 }
 
 #microphone-button.recording {
-  background-color: var(--md-sys-color-surface-container-high);
+  background-color: #ff4136; /* Red color for recording */
   transition: background-color 0.3s ease;
 }
 
@@ -42,22 +37,28 @@
 
 
 .mic-inactive{
-    background-color: var(--md-sys-color-surface-container-low);
+    background-color: grey;
 }
 
 .mic-activating{
-    background-color: var(--md-sys-color-surface-container);
+    background-color: silver;
     animation: pulse 0.8s infinite;
 }
 
-.mic-listening,
-.mic-recording,
-.mic-waiting,
-.mic-processing {
-  background-color: var(--md-sys-color-surface-container-high);
+.mic-listening {
+  background-color: red;
+}
+
+.mic-recording {
+  background-color: green;
+}
+
+.mic-waiting {
+  background-color: teal;
 }
 
 .mic-processing {
+  background-color: darkcyan;
   animation: pulse 0.8s infinite;
   transform-origin: center;
 }

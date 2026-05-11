@@ -1,5 +1,6 @@
 # Use the pre-built base image for A0
 # FROM agent-zero-base:local
+# FROM agent0ai/agent-zero-base:testing
 FROM agent0ai/agent-zero-base:latest
 
 # Check if the argument is provided, else throw an error
@@ -29,7 +30,7 @@ RUN bash /ins/post_install.sh $BRANCH
 # Expose ports
 EXPOSE 22 80 9000-9009
 
-RUN chmod +x /exe/initialize.sh /exe/run_A0.sh /exe/run_searxng.sh /exe/run_tunnel_api.sh
+RUN chmod +x /exe/initialize.sh /exe/run_A0.sh /exe/run_searxng.sh /exe/run_tunnel_api.sh /exe/trigger_self_update.sh
 
 # initialize runtime and switch to supervisord
 CMD ["/exe/initialize.sh", "$BRANCH"]

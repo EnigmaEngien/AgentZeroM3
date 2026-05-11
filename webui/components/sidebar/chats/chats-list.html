@@ -10,19 +10,31 @@
   <div x-data>
     <template x-if="$store.chats">
       <div class="chats-list-container" x-data>
-        <h3 class="section-header">Chats</h3>
-        <ul class="config-list chats-config-list" x-show="$store.chats.contexts.length > 0">
+        <x-extension id="sidebar-chats-list-start"></x-extension>
+        <div class="section-header-row">
+          <h3 class="section-header">Chats</h3>
+          <!-- New Chat Button -->
+          <button id="newChat" class="btn-icon-action chat-list-action-btn" @click="$store.chats.newChat()" aria-label="New Chat" title="New Chat" data-bs-placement="top" data-bs-trigger="hover">
+            <span class="material-symbols-outlined">chat_add_on</span>
+          </button>
+        </div>
+
+
+
+        <ul class="config-list chats-config-list no-scrollbar" x-show="$store.chats.contexts.length > 0">
           <template x-for="context in $store.chats.contexts" :key="context.id">
             <li>
               <div :class="{'chat-container': true, 'chat-selected': context.id === $store.chats.selected}"
                 @click="$store.chats.selectChat(context.id)">
                 <div class="chat-list-button">
-                  <span class="project-color-ball"
+                  <span :class="{'project-color-ball': true, 'heartbeat': context.running}"
                     :style="context.project?.color ? { backgroundColor: context.project.color } : { border: '1px solid var(--color-border)' }"></span>
-                  <span class="chat-name" :title="context.name ? context.name : 'Chat #' + context.no"
+                  <span class="chat-name"
                     x-text="context.name ? context.name : 'Chat #' + context.no"></span>
                 </div>
-                <button class="edit-button" @click.stop="$store.chats.killChat(context.id)">X</button>
+                <button class="btn-icon-action chat-list-action-btn" title="Close chat" @click.stop="$confirmClick($event, () => $store.chats.killChat(context.id))">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
               </div>
             </li>
           </template>
@@ -30,78 +42,71 @@
         <div class="empty-list-message" x-show="$store.chats.contexts.length === 0">
           <p><i>No chats to list.</i></p>
         </div>
+        <x-extension id="sidebar-chats-list-end"></x-extension>
       </div>
     </template>
   </div>
 
   <style>
+    .chats-list-container .section-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      flex-shrink: 0;
+      margin-bottom: var(--spacing-xs);
+      z-index: 10;
+    }
+
+    .chats-list-container .section-header {
+      margin: 0;
+    }
+
+    /* Chats list container and items */
     .chats-list-container {
       display: flex;
       flex-direction: column;
       flex: 1;
       min-height: 0;
-      margin-top: var(--spacing-sm);
+      margin-top: var(--spacing-md);
     }
 
     .chats-config-list {
       flex: 1;
       min-height: 0;
-      overflow-y: auto;
+      overflow: scroll;
       scroll-behavior: smooth;
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      scrollbar-width: none;
+      max-height: 100%;
     }
 
-    .chats-config-list::-webkit-scrollbar {
-      display: none;
-    }
-
-    /* M3 Navigation Item Base */
     .chat-container {
       position: relative;
       display: flex;
       align-items: center;
       justify-content: space-between;
       width: 100%;
-      height: 48px;
-      margin-bottom: 4px;
-      padding: 0 16px;
-      border-radius: 24px;
-      cursor: pointer;
-      transition: background-color var(--duration-short) linear,
-        transform var(--duration-short) var(--easing-standard);
+      min-height: 40px;
+      border-radius: 4px;
       overflow: hidden;
-      color: var(--md-sys-color-on-surface);
-    }
-
-    .chat-container:hover {
-      background-color: color-mix(in srgb, var(--md-sys-color-on-surface-variant) 8%, transparent);
-    }
-
-    /* Selected State - M3 Primary Container */
-    .chat-selected {
-      background-color: var(--md-sys-color-primary-container) !important;
-      color: var(--md-sys-color-on-primary-container) !important;
-    }
-
-    .chat-selected .chat-name {
-      font-weight: 700;
+      cursor: pointer;
     }
 
     .chat-list-button {
       display: flex;
       align-items: center;
       flex-grow: 1;
-      min-width: 0;
-      gap: 12px;
+      padding: 8px;
+      overflow: hidden;
+      gap: 0.5em;
     }
 
     .project-color-ball {
-      width: 10px;
-      height: 10px;
+      width: 0.6em;
+      height: 0.6em;
       border-radius: 50%;
+      display: inline-block;
+      box-sizing: border-box;
       flex-shrink: 0;
     }
 
@@ -109,41 +114,62 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      font-size: 0.875rem;
-      /* M3 Label Large */
-      letter-spacing: 0.1px;
+      font-size: var(--font-size-small);
     }
 
-    /* Modern Delete Button */
-    .edit-button {
+    .chat-list-action-btn {
       flex-shrink: 0;
-      width: 28px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: transparent;
-      border: none;
-      border-radius: 50%;
-      color: inherit;
-      opacity: 0.6;
-      cursor: pointer;
-      font-size: 14px;
-      transition: all var(--duration-short) var(--easing-standard);
+      margin-right: 8px;
     }
 
-    .edit-button:hover {
-      background-color: color-mix(in srgb, currentColor 12%, transparent);
+    .chat-container:hover{
+      background-color: var(--color-background-hover);
+    }
+
+    .device-pointer .chat-container .chat-list-action-btn {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0s;
+    }
+
+    .device-pointer .chat-container:hover .chat-list-action-btn {
       opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .device-touch .chats-list-container .chat-list-action-btn {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
     }
 
     .empty-list-message {
-      padding: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100px;
+      color: var(--color-secondary);
       text-align: center;
-      color: var(--md-sys-color-on-surface);
-      opacity: 0.6;
-      font-size: 0.8125rem;
+      opacity: 0.7;
+      font-style: italic;
     }
+
+    .light-mode .empty-list-message {
+      color: var(--color-secondary-light);
+    }
+
+    /* Selected chat accent */
+    .chat-selected .chat-name {
+      font-size: var(--font-size-normal);
+      font-weight: bold;
+    }
+
+    /* .chat-list-button.font-bold { position: relative; background-color: var(--color-border) 0.05; } */
+    /* .chat-list-button.font-bold::before { content: ""; position: absolute; left: 0; top: 0; height: 100%; width: 3px; background-color: var(--color-border); border-top-left-radius: 3px; border-bottom-left-radius: 3px; } */
+    /* .light-mode .chat-list-button.font-bold { background-color: var(--color-border) 0.05; } */
+    /* .light-mode .chat-list-button.font-bold::before { background-color: var(--color-border); } */
   </style>
 </body>
 

@@ -4,6 +4,7 @@
 **/__pycache__/
 *.py[cod]
 **/.conda/
+**/node_modules/
 
 #Ignore IDE files
 .cursor/
@@ -15,30 +16,31 @@
 # Ignore all contents of the virtual environment directory
 .venv/
 
-# Handle memory directory
-memory/**
-!memory/**/
+# obsolete folders
+/memory/
+/knowledge/custom/
+/instruments/
 
 # Handle logs directory
-logs/*
+logs/**
+!logs/**/
 
 # Handle tmp and usr directory
-tmp/*
-usr/*
+tmp/**
+!tmp/**/
 
-# Handle knowledge directory
-knowledge/**
-!knowledge/**/
-# Explicitly allow the default folder in knowledge
-!knowledge/default/
-!knowledge/default/**
+# hack to keep .gitkeep but ignore nested repos
+# Ignore everything under usr
+usr/**
+# Ignore nested repos
+/usr/**/.git
+# Allow git to traverse directories
+!usr/**/
+# Re-ignore everything again
+usr/**/*
+# But allow .gitkeep files
+!usr/**/.gitkeep
 
-# Handle instruments directory
-instruments/**
-!instruments/**/
-# Explicitly allow the default folder in instruments
-!instruments/default/
-!instruments/default/**
 
 # Global rule to include .gitkeep files anywhere
 !**/.gitkeep
@@ -46,3 +48,5 @@ instruments/**
 # for browser-use
 agent_history.gif
 
+.agent/**
+.claude/**

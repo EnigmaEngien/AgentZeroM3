@@ -1,6 +1,11 @@
 # SearXNG settings
 
-use_default_settings: true
+# Keep a minimal default engine set. Wikidata currently returns
+# variant payloads that break the 2026.04 searxng bootstrap init path.
+use_default_settings:
+  engines:
+    remove:
+      - wikidata
 
 general:
   debug: false
@@ -39,7 +44,7 @@ enabled_plugins:
   - 'Hash plugin'
   - 'Self Informations'
   - 'Tracker URL remover'
-  - 'Ahmia blacklist'
+  # - 'Ahmia blacklist'
   # - 'Hostnames plugin'  # see 'hostnames' configuration below
   # - 'Open Access DOI rewrite'
 
@@ -58,6 +63,14 @@ enabled_plugins:
 #     - '(.*\.)?wikipedia.org$'
 
 engines:
+
+  - name: ahmia
+    disabled: true
+    inactive: true
+
+  - name: torch
+    disabled: true
+    inactive: true
 
 #   - name: fdroid
 #     disabled: false

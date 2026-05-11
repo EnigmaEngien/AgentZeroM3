@@ -14,31 +14,23 @@
     <!-- This construct of x-data + x-if is used to ensure the component is only rendered when the store is available -->
     <div x-data>
         <template x-if="$store.chatTop">
-
             <!-- Time and Date -->
             <div id="time-date-container">
+                <x-extension id="chat-top-start"></x-extension>
                 <div id="time-date"></div>
-                <div class="status-icon">
-                    <svg viewBox="0 0 30 30">
-                        <!-- Connected State (filled circle) -->
-                        <circle class="connected-circle" cx="15" cy="15" r="8"
-                            x-bind:fill="$store.chatTop.connected ? 'var(--color-status-connected)' : 'none'"
-                            x-bind:opacity="$store.chatTop.connected ? 1 : 0" />
-
-                        <!-- Disconnected State (outline circle) -->
-                        <circle class="disconnected-circle" cx="15" cy="15" r="12" fill="none"
-                            x-bind:stroke="$store.chatTop.connected ? 'none' : 'var(--color-status-disconnected)'"
-                            stroke-width="3" x-bind:opacity="$store.chatTop.connected ? 0 : 1" />
-                    </svg>
-                </div>
+                <x-component path="sync/sync-status.html"></x-component>
                 <!-- Notification Toggle positioned next to time-date -->
                 <x-component path="notifications/notification-icons.html"></x-component>
                 <!-- Project Selector -->
                 <x-component path="projects/project-selector.html"></x-component>
+                <x-extension id="chat-top-end"></x-extension>
             </div>
-
         </template>
     </div>
+
+    <style>
+    #time-date-container > x-extension { display: contents; }
+    </style>
 
 </body>
 

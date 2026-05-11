@@ -1,33 +1,25 @@
 <html>
-
 <head>
   <script type="module">
     import { store } from "/components/sidebar/bottom/preferences/preferences-store.js";
   </script>
 </head>
-
 <body>
   <div x-data>
     <template x-if="$store.preferences">
       <div class="pref-section">
         <span>
-          <h3 class="pref-header" data-bs-toggle="collapse" @click="$store.sidebar.toggleSection('preferences')"
-            x-effect="!$store.sidebar.isSectionOpen('preferences') ? $el.classList.add('collapsed') : $el.classList.remove('collapsed')">
+          <h3 class="pref-header" 
+              data-bs-toggle="collapse"
+              @click="$store.sidebar.toggleSection('preferences')"
+              x-effect="!$store.sidebar.isSectionOpen('preferences') ? $el.classList.add('collapsed') : $el.classList.remove('collapsed')">
             Preferences
-            <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" width="16" height="16">
+            <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
               <path d="M8 4l8 8-8 8" />
             </svg>
           </h3>
           <ul class="config-list collapse" id="preferences-collapse"
-            x-effect="(() => { const c = bootstrap.Collapse.getOrCreateInstance($el, { toggle: false }); $store.sidebar.isSectionOpen('preferences') ? c.show() : c.hide(); })()">
-            <li x-data>
-              <span>Autoscroll</span>
-              <label class="switch">
-                <input id="auto-scroll-switch" type="checkbox" x-model="$store.preferences.autoScroll">
-                <span class="slider"></span>
-              </label>
-            </li>
+              x-effect="(() => { const c = bootstrap.Collapse.getOrCreateInstance($el, { toggle: false }); $store.sidebar.isSectionOpen('preferences') ? c.show() : c.hide(); })()">
             <li x-data>
               <span class="switch-label">Dark mode</span>
               <label class="switch">
@@ -35,24 +27,41 @@
                 <span class="slider"></span>
               </label>
             </li>
+            <li x-data class="chat-width-setting">
+              <span class="width-label">Width</span>
+              <div class="width-buttons">
+                <template x-for="(opt, idx) in $store.preferences.chatWidthOptions" :key="opt.value">
+                  <span class="width-btn-wrapper">
+                    <button type="button" 
+                            class="width-btn"
+                            :class="{ 'active': $store.preferences.chatWidth === opt.value }"
+                            @click="$store.preferences.chatWidth = opt.value"
+                            x-text="opt.label"></button>
+                    <span class="width-sep" x-show="idx < $store.preferences.chatWidthOptions.length - 1">·</span>
+                  </span>
+                </template>
+              </div>
+            </li>
+            <li x-data class="detail-mode-setting">
+              <span class="detail-label">Detail</span>
+              <div class="detail-buttons">
+                <template x-for="(opt, idx) in $store.preferences.detailModeOptions" :key="opt.value">
+                  <span class="detail-btn-wrapper">
+                    <button type="button" 
+                            class="detail-btn"
+                            :class="{ 'active': $store.preferences.detailMode === opt.value }"
+                            @click="$store.preferences.detailMode = opt.value"
+                            :title="opt.title"
+                            x-text="opt.label"></button>
+                    <span class="detail-sep" x-show="idx < $store.preferences.detailModeOptions.length - 1">·</span>
+                  </span>
+                </template>
+              </div>
+            </li>
             <li x-data>
               <span class="switch-label">Speech</span>
               <label class="switch">
                 <input type="checkbox" x-model="$store.preferences.speech">
-                <span class="slider"></span>
-              </label>
-            </li>
-            <li x-data>
-              <span>Show thoughts</span>
-              <label class="switch">
-                <input type="checkbox" x-model="$store.preferences.showThoughts">
-                <span class="slider"></span>
-              </label>
-            </li>
-            <li x-data>
-              <span>Show JSON</span>
-              <label class="switch">
-                <input type="checkbox" x-model="$store.preferences.showJson">
                 <span class="slider"></span>
               </label>
             </li>
@@ -63,13 +72,6 @@
                 <span class="slider"></span>
               </label>
             </li>
-            <li x-data class="accent-row" style="align-items: center; gap: 0.6rem;">
-              <span>Accent color</span>
-              <div style="display:flex;align-items:center;margin-left:auto;gap:0.6rem;">
-                <input id="accent-hue" type="range" min="0" max="360" x-model.number="$store.preferences.accentHue" style="width:140px">
-                <div id="accent-swatch" style="width:28px;height:20px;border-radius:4px;border:1px solid rgba(0,0,0,0.12);background: hsl(220 80% 50%);"></div>
-              </div>
-            </li>
           </ul>
         </span>
       </div>
@@ -78,16 +80,13 @@
 
   <style>
     .pref-section {
-      font-size: var(--font-size-small);
-      padding: 0.6rem var(--spacing-md) 0.05rem var(--spacing-md);
-      color: var(--md-sys-color-on-surface);
+    font-size: var(--font-size-small);
+    padding: 0.6rem var(--spacing-md) 0.05rem var(--spacing-md);
     }
-
     /* Collapse transition */
     .pref-section [x-cloak] {
       display: none;
     }
-
     .pref-section .pref-header {
       display: flex;
       align-items: center;
@@ -96,7 +95,6 @@
       cursor: pointer;
       user-select: none;
     }
-
     .pref-section .config-list {
       list-style: none;
       padding: 0.05rem 0;
@@ -105,16 +103,13 @@
       flex-direction: column;
       gap: 1px;
     }
-
     #preferences-collapse li {
-      opacity: 0.8;
+    opacity: 0.8;
     }
-
     .pref-section .switch-label,
     .pref-section span {
       font-size: 0.8rem;
     }
-
     .pref-section .switch {
       position: relative;
       display: inline-block;
@@ -122,15 +117,96 @@
       height: 19px;
       margin-left: auto;
     }
+    .pref-section li { display: flex; align-items: center; }
 
-    .pref-section li {
+    /* Chat width button bar */
+    .chat-width-setting {
+      gap: 0.25rem;
+    }
+    .chat-width-setting .width-label {
+      flex: 1;
+    }
+    .width-buttons {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .width-btn-wrapper {
       display: flex;
       align-items: center;
     }
+    .width-btn {
+      background: none;
+      border: none;
+      color: var(--color-primary);
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      padding: 0.15rem 0.1rem;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.15s ease, color 0.15s ease;
+    }
+    .width-btn:hover {
+      opacity: 0.85;
+    }
+    .width-btn.active {
+      opacity: 1;
+      color: var(--color-text);
+    }
+    .width-sep {
+      color: var(--color-text-secondary, #666);
+      font-size: 0.6rem;
+      margin: 0 0.1rem;
+      opacity: 0.5;
+    }
 
-    .accent-row input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--md-sys-color-primary); border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.12); }
-    .accent-row input[type="range"] { background: linear-gradient(90deg, hsl(0 80% 50%) 0%, hsl(60 80% 50%) 17%, hsl(120 80% 50%) 33%, hsl(180 80% 50%) 50%, hsl(240 80% 50%) 66%, hsl(300 80% 50%) 83%, hsl(360 80% 50%) 100%); height:6px; border-radius:6px; }
+    /* Detail mode button bar */
+    .detail-mode-setting {
+      gap: 0.25rem;
+    }
+    .detail-mode-setting .detail-label {
+      flex: 1;
+    }
+    .detail-buttons {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .detail-btn-wrapper {
+      display: flex;
+      align-items: center;
+    }
+    .detail-btn {
+      background: none;
+      border: none;
+      color: var(--color-primary);
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      padding: 0.15rem 0.1rem;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.15s ease;
+    }
+    .detail-btn .material-symbols-outlined {
+      font-size: 1rem;
+    }
+    .detail-btn:hover {
+      opacity: 0.85;
+    }
+    .detail-btn.active {
+      opacity: 1;
+      color: var(--color-text);
+    }
+    .detail-sep {
+      color: var(--color-text-secondary, #666);
+      font-size: 0.6rem;
+      margin: 0 0.1rem;
+      opacity: 0.5;
+    }
   </style>
 </body>
-
 </html>
+
+

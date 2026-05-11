@@ -3,12 +3,13 @@ import { createStore } from "/js/AlpineStore.js";
 // This store manages the visibility and state of the main sidebar panel.
 const model = {
   isOpen: true,
-  defaultOpen: true, // Persisted preference
+  menuOpen: false,
   _initialized: false,
 
   // Centralized collapse state for all sidebar sections (persisted in localStorage)
   sectionStates: {
     tasks: false,       // default: collapsed
+    chatActions: false, // default: collapsed
     preferences: false  // default: collapsed
   },
 
@@ -19,7 +20,6 @@ const model = {
     this._initialized = true;
 
     this.loadSectionStates();
-    this.loadDefaultVisibility(); // Load preference
     this.handleResize();
     this.resizeHandler = () => this.handleResize();
     window.addEventListener("resize", this.resizeHandler);
@@ -83,10 +83,8 @@ const model = {
   handleResize() {
     if (this.isMobile()) {
       this.isOpen = false;
-    } else {
-      // On desktop, respect the default preference
-      this.isOpen = this.defaultOpen;
     }
+    this.menuClose();
   },
 
   // Check if the current viewport is mobile
@@ -94,38 +92,45 @@ const model = {
     return window.innerWidth <= 768;
   },
 
-  // Toggle default visibility preference
-  toggleDefaultVisibility() {
-    this.defaultOpen = !this.defaultOpen;
-    this.persistDefaultVisibility();
-    // If on desktop, apply the new setting immediately
-    if (!this.isMobile()) {
-      this.isOpen = this.defaultOpen;
+  // Dropdown positioning for quick-actions (fixed position to escape overflow:hidden)
+  dropdownStyle: {},
+
+  headOpen() {
+    return this.isOpen || this.menuOpen;
+  },
+
+  menuToggle(triggerElement) {
+    this.menuOpen = !this.menuOpen;
+    if (this.menuOpen) {
+      this.menuPos(triggerElement);
     }
   },
 
-  // Load default visibility from localStorage
-  loadDefaultVisibility() {
-    try {
-      const stored = localStorage.getItem('sidebarDefaultOpen');
-      if (stored !== null) {
-        this.defaultOpen = JSON.parse(stored);
-      } else {
-        this.defaultOpen = true; // Default to true if not set
-      }
-    } catch (e) {
-      console.error('Failed to load sidebar default visibility', e);
-      this.defaultOpen = true;
+  menuClose() {
+    this.menuOpen = false;
+  },
+
+  menuClick(event, panelElement) {
+    if (!this.menuOpen || !panelElement) return;
+    if (!panelElement.contains(event.target)) {
+      this.menuClose();
     }
   },
 
-  // Persist default visibility to localStorage
-  persistDefaultVisibility() {
-    try {
-      localStorage.setItem('sidebarDefaultOpen', JSON.stringify(this.defaultOpen));
-    } catch (e) {
-      console.error('Failed to persist sidebar default visibility', e);
-    }
+  menuPos(triggerElement) {
+    if (!triggerElement) return;
+    const rect = triggerElement.getBoundingClientRect();
+    const menuWidth = Math.max(rect.width, 180);
+    const viewportPadding = 8;
+    const maxLeft = Math.max(
+      viewportPadding,
+      window.innerWidth - menuWidth - viewportPadding,
+    );
+    this.dropdownStyle = {
+      top: `${rect.bottom + 8}px`,
+      left: `${Math.min(Math.max(rect.left, viewportPadding), maxLeft)}px`,
+      width: `${menuWidth}px`
+    };
   },
 };
 
